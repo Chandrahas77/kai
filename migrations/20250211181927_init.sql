@@ -1,4 +1,5 @@
--- Table to store metadata about each scan
+-- +goose Up
+-- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS scans (
     scan_id TEXT PRIMARY KEY,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -7,7 +8,6 @@ CREATE TABLE IF NOT EXISTS scans (
     resource_name TEXT NOT NULL
 );
 
--- Table to store vulnerability details
 CREATE TABLE IF NOT EXISTS vulnerabilities (
     id TEXT PRIMARY KEY,
     scan_id TEXT NOT NULL,
@@ -20,21 +20,19 @@ CREATE TABLE IF NOT EXISTS vulnerabilities (
     description TEXT NOT NULL,
     published_date TIMESTAMP NOT NULL,
     link TEXT NOT NULL,
-    risk_factors JSONB NOT NULL,  -- JSON array stored as JSONB
+    risk_factors JSONB NOT NULL,
     FOREIGN KEY (scan_id) REFERENCES scans(scan_id) ON DELETE CASCADE
 );
 
--- Table to store scan summary
 CREATE TABLE IF NOT EXISTS scan_summary (
     scan_id TEXT PRIMARY KEY,
     total_vulnerabilities INT NOT NULL,
-    severity_counts JSONB NOT NULL, -- Stores severity breakdown as JSON
+    severity_counts JSONB NOT NULL,
     fixable_count INT NOT NULL,
     compliant BOOLEAN NOT NULL,
     FOREIGN KEY (scan_id) REFERENCES scans(scan_id) ON DELETE CASCADE
 );
 
--- Table to store scan metadata
 CREATE TABLE IF NOT EXISTS scan_metadata (
     scan_id TEXT PRIMARY KEY,
     scanner_version TEXT NOT NULL,
@@ -43,3 +41,12 @@ CREATE TABLE IF NOT EXISTS scan_metadata (
     excluded_paths JSONB NOT NULL,
     FOREIGN KEY (scan_id) REFERENCES scans(scan_id) ON DELETE CASCADE
 );
+-- +goose StatementEnd
+
+-- +goose Down
+-- +goose StatementBegin
+DROP TABLE IF EXISTS scan_metadata;
+DROP TABLE IF EXISTS scan_summary;
+DROP TABLE IF EXISTS vulnerabilities;
+DROP TABLE IF EXISTS scans;
+-- +goose StatementEnd
