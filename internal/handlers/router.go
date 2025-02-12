@@ -8,5 +8,7 @@ import (
 func NewRouter() *httprouter.Router {
 	router := httprouter.New()
 	setPingRoutes(router)
+	setScanRoutes(router)
+	setQueryRoutes(router)
 	return router
 }

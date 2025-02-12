@@ -8,7 +8,7 @@ type ScanReportDAO struct {
 
 type ScanResultsDAO struct {
 	ScanId          string             `json:"scan_id"`
-	Timetamp        time.Time          `json:"timestamp"`
+	Timestamp        time.Time          `json:"timestamp"`
 	ScanStatus      string             `json:"scan_status"`
 	ResourceType    string             `json:"resource_type"`
 	ResourceName    string             `json:"resource_name"`
@@ -35,7 +35,7 @@ type ScanSummaryDAO struct {
 	TotalVulnerabilities int               `json:"total_vulnerabilities"`
 	SeverityCounts       SeverityCountsDAO `json:"severity_counts"`
 	FixableCount         int               `json:"fixable_count"`
-	Complaint            bool              `json:"complaint"`
+	Compliant            bool              `json:"complaint"`
 }
 
 type SeverityCountsDAO struct {

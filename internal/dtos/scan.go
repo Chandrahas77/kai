@@ -2,6 +2,7 @@ package dtos
 
 import "time"
 
+type ScanReports []ScanReport  
 type ScanReport struct {
 	ScanResults ScanResults `json:"scanResults"`
 }
