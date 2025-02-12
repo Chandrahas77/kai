@@ -106,7 +106,7 @@ func processFile(repo string, file string) error {
 
 	for _, scan := range scans {
 		scanDAO := convertToDAO(scan.ScanResults)
-		err = daos.InsertScan(scanDAO)
+		err = daos.UpsertScan(scanDAO)
 		if err != nil {
 			return fmt.Errorf("failed to store scan in DB: %w", err)
 		}
