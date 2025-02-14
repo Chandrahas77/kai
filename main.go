@@ -30,7 +30,6 @@ func main() {
 	router := handlers.NewRouter()
 
 	// Start the server
-	//TODO make it env variable
 	l.Info("Server running on port", zap.String("port", cfg.ServerPort))
 	http.ListenAndServe(":"+cfg.ServerPort, router)
 }

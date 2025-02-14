@@ -39,9 +39,9 @@ func ScanHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to process scan")
 		return
+	} else {
+		json.NewEncoder(w).Encode(map[string]string{"message": "Scan completed successfully"})
+		w.WriteHeader(http.StatusOK)
 	}
 
-	// Respond
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Scan completed successfully"})
 }

@@ -161,8 +161,7 @@ func ProcessScan(repo string, files []string) error {
 	close(fileChan)
 
 	// Process files in parallel (3 workers)
-	//TODO: Add the maxWorkers const to env or make it constant
-	maxWorkers := 3
+	const maxWorkers = 3
 	for i := 0; i < maxWorkers; i++ {
 		wg.Add(1)
 		go func() {
