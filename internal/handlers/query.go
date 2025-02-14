@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"kai-sec/internal/dtos"
 	"kai-sec/internal/services"
+	"kai-sec/internal/utils"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -18,18 +19,17 @@ func QueryHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 	// Decode request
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 
 	// Get vulnerabilities by severity
 	results, err := services.GetVulnerabilities(req)
 	if err != nil {
-		http.Error(w, "Failed to fetch vulnerabilities", http.StatusInternalServerError)
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to fetch vulnerabilities")
 		return
 	}
 
-	// Send JSON response
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(results)
+	utils.RespondWithJSON(w, http.StatusOK, "success", "Vulnerabilities fetched successfully", results)
 }

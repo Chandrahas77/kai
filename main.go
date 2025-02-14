@@ -1,27 +1,30 @@
 package main
 
 import (
-	"fmt"
 	"kai-sec/internal/handlers"
+	"kai-sec/internal/logger"
 	"kai-sec/internal/storage"
-	"log"
 	"net/http"
+
+	"go.uber.org/zap"
 )
 
 func main() {
+	logger.InitLogger()
+	l := logger.Log
 	db, err := storage.ConnectDB()
 	if err != nil {
-		log.Fatal("Database connection failed:", err)
+		l.Fatal("Database connection failed:", zap.Error(err))
 	}
 	defer db.Close()
 
-	log.Println("Service started successfully!")
+	l.Info("Service started successfully!")
 
 	router := handlers.NewRouter()
 
 	// Start the server
 	//TODO make it env variable
 	port := "8080"
-	fmt.Println("Server running on port", port)
-	log.Fatal(http.ListenAndServe(":"+port, router))
+	l.Info("Server running on port", zap.String("port", port))
+	http.ListenAndServe(":"+port, router)
 }

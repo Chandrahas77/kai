@@ -4,16 +4,25 @@ import (
 	"fmt"
 	"kai-sec/internal/daos"
 	"kai-sec/internal/dtos"
+	"kai-sec/internal/logger"
+
+	"go.uber.org/zap"
 )
 
+
 func GetVulnerabilities(filters dtos.FliterRequest) ([]dtos.Vulnerability, error) {
+	l := logger.GetLogger()
 	if filters.Filters.Severity == "" {
+		l.Error("Missing severity filter")
 		return nil, fmt.Errorf("severity filter is required")
 	}
+
+	l.Info("Fetching vulnerabilities", zap.String("severity", filters.Filters.Severity))
 
 	// Fetch vulnerabilities from DB
 	vulns, err := daos.GetVulnerabilitiesBySeverity(filters.Filters.Severity)
 	if err != nil {
+		l.Error("Error retrieving vulnerabilities", zap.Error(err))
 		return nil, fmt.Errorf("error retrieving vulnerabilities: %w", err)
 	}
 
@@ -34,6 +43,5 @@ func GetVulnerabilities(filters dtos.FliterRequest) ([]dtos.Vulnerability, error
 			RiskFactors:    v.RiskFactors,
 		})
 	}
-
 	return results, nil
 }

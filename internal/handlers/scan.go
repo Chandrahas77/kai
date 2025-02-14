@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"kai-sec/internal/services"
+	"kai-sec/internal/utils"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -23,20 +24,20 @@ func ScanHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Decode request
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 
 	// Validate input
 	if req.Repository == "" || len(req.Files) == 0 {
-		http.Error(w, "Repo and files are required", http.StatusBadRequest)
+		utils.RespondWithError(w, http.StatusBadRequest, "Repo and files are required")
 		return
 	}
 
 	// Process Scan
 	err = services.ProcessScan(req.Repository, req.Files)
 	if err != nil {
-		http.Error(w, "Failed to process scan", http.StatusInternalServerError)
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to process scan")
 		return
 	}
 

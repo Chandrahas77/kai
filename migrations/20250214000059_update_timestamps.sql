@@ -1,0 +1,31 @@
+-- +goose Up
+-- +goose StatementBegin
+ALTER TABLE scans ALTER COLUMN last_attempted_at SET DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE scans ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE scans ALTER COLUMN updated_at SET DEFAULT CURRENT_TIMESTAMP;
+
+ALTER TABLE vulnerabilities ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE vulnerabilities ALTER COLUMN updated_at SET DEFAULT CURRENT_TIMESTAMP;
+
+ALTER TABLE scan_summary ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE scan_summary ALTER COLUMN updated_at SET DEFAULT CURRENT_TIMESTAMP;
+
+ALTER TABLE scan_metadata ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE scan_metadata ALTER COLUMN updated_at SET DEFAULT CURRENT_TIMESTAMP;
+-- +goose StatementEnd
+
+-- +goose Down
+-- +goose StatementBegin
+ALTER TABLE scans ALTER COLUMN last_attempted_at SET DEFAULT NOW();
+ALTER TABLE scans ALTER COLUMN created_at SET DEFAULT NOW();
+ALTER TABLE scans ALTER COLUMN updated_at SET DEFAULT NOW();
+
+ALTER TABLE vulnerabilities ALTER COLUMN created_at SET DEFAULT NOW();
+ALTER TABLE vulnerabilities ALTER COLUMN updated_at SET DEFAULT NOW();
+
+ALTER TABLE scan_summary ALTER COLUMN created_at SET DEFAULT NOW();
+ALTER TABLE scan_summary ALTER COLUMN updated_at SET DEFAULT NOW();
+
+ALTER TABLE scan_metadata ALTER COLUMN created_at SET DEFAULT NOW();
+ALTER TABLE scan_metadata ALTER COLUMN updated_at SET DEFAULT NOW();
+-- +goose StatementEnd

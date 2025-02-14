@@ -4,14 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"kai-sec/internal/daos/models"
+	"kai-sec/internal/logger"
 	"kai-sec/internal/storage"
-	"log"
+	"time"
+
+	"go.uber.org/zap"
 )
 
 func GetVulnerabilitiesBySeverity(severity string) ([]models.VulnerabilityDAO, error) {
-	if storage.DB == nil {
-		return nil, fmt.Errorf("database connection is nil")
-	}
+	l := logger.GetLogger()
 
 	query := `
 		SELECT id, severity, cvss, status, package_name, current_version, fixed_version, 
@@ -22,6 +23,7 @@ func GetVulnerabilitiesBySeverity(severity string) ([]models.VulnerabilityDAO, e
 
 	rows, err := storage.DB.Query(query, severity)
 	if err != nil {
+		l.Error("Failed to fetch vulnerabilities", zap.String("severity", severity), zap.Error(err))
 		return nil, fmt.Errorf("failed to fetch vulnerabilities: %w", err)
 	}
 	defer rows.Close()
@@ -31,14 +33,21 @@ func GetVulnerabilitiesBySeverity(severity string) ([]models.VulnerabilityDAO, e
 	for rows.Next() {
 		var vuln models.VulnerabilityDAO
 		var riskFactorsJSON string
+		var publishedDateStr string
 
 		err := rows.Scan(
 			&vuln.ID, &vuln.Severity, &vuln.CVSS, &vuln.Status, &vuln.PackageName,
 			&vuln.CurrentVersion, &vuln.FixedVersion, &vuln.Description,
-			&vuln.PublishedDate, &vuln.Link, &riskFactorsJSON,
+			&publishedDateStr, &vuln.Link, &riskFactorsJSON,
 		)
 		if err != nil {
+			l.Error("Failed to scan row", zap.String("severity", severity), zap.Error(err))
 			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+
+		vuln.PublishedDate, err = time.Parse(time.RFC3339, publishedDateStr)
+		if err != nil {
+			vuln.PublishedDate = time.Time{} 
 		}
 
 		// Convert risk factors JSON string to slice
@@ -46,14 +55,15 @@ func GetVulnerabilitiesBySeverity(severity string) ([]models.VulnerabilityDAO, e
 		vulnerabilities = append(vulnerabilities, vuln)
 	}
 
-	log.Printf("Fetched %d vulnerabilities with severity %s\n", len(vulnerabilities), severity)
+	l.Info("Fetched vulnerabilities successfully", zap.String("severity", severity), zap.Int("count", len(vulnerabilities)))
 	return vulnerabilities, nil
 }
 
 func parseRiskFactors(jsonString string) []string {
+	l := logger.GetLogger()
 	var riskFactors []string
 	if err := json.Unmarshal([]byte(jsonString), &riskFactors); err != nil {
-		log.Printf("Error parsing risk factors JSON: %v\n", err)
+		l.Warn("Error parsing risk factors JSON", zap.String("json", jsonString), zap.Error(err))
 		return []string{}
 	}
 	return riskFactors

@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"fmt"
+	"kai-sec/internal/utils"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -12,6 +12,5 @@ func setPingRoutes(router *httprouter.Router) {
 }
 
 func Ping(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintln(w, "pong")
+	utils.RespondWithJSON(w, http.StatusOK, "success", "pong", nil)
 }
