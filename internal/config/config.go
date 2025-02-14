@@ -1,44 +1,45 @@
 package config
 
 import (
-	"log"
+	"fmt"
 	"os"
-	"strconv"
 )
 
-// Config struct holds all configuration values
-type Config struct {
-	DBUrl      string
-	MaxWorkers int
-	GitHubRepo string
+// DBConfig holds database configuration details
+type DBConfig struct {
+	User       string
+	Password   string
+	Name       string
+	Host       string
 	Port       string
+	ServerPort string
 }
 
-//Global instance of Config
-var AppConfig Config
+// LoadConfig reads environment variables and returns a DBConfig instance
+func LoadConfig() (*DBConfig, error) {
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+	serverPort := os.Getenv("APP_PORT")
 
-// LoadConfig loads environment variables and sets default values
-func LoadConfig() {
-	maxWorkers, err := strconv.Atoi(getEnv("MAX_WORKERS", "3"))
-	if err != nil {
-		log.Println("Invalid MAX_WORKERS value, using default (3)")
-		maxWorkers = 3
+	if dbUser == "" || dbPassword == "" || dbName == "" || dbHost == "" || dbPort == "" {
+		return nil, fmt.Errorf("missing required environment variables")
 	}
 
-	AppConfig = Config{
-		DBUrl:      getEnv("DATABASE_URL", "sqlite3://:memory:"),
-		MaxWorkers: maxWorkers,
-		GitHubRepo: getEnv("GITHUB_REPO", "https://github.com/velancio/vulnerability_scans"),
-		Port:       getEnv("PORT", "8080"),
-	}
-
-	log.Printf("Config loaded: %+v", AppConfig)
+	return &DBConfig{
+		User:       dbUser,
+		Password:   dbPassword,
+		Name:       dbName,
+		Host:       dbHost,
+		Port:       dbPort,
+		ServerPort: serverPort,
+	}, nil
 }
 
-// getEnv retrieves the environment variable or returns the default value
-func getEnv(key, defaultVal string) string {
-	if value, exists := os.LookupEnv(key); exists {
-		return value
-	}
-	return defaultVal
+// GetDSN constructs the database connection string
+func (c *DBConfig) GetDSN() string {
+	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		c.User, c.Password, c.Host, c.Port, c.Name)
 }

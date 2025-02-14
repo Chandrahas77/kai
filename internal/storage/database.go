@@ -3,9 +3,11 @@ package storage
 import (
 	"database/sql"
 	"fmt"
+	"kai-sec/internal/config"
 	"kai-sec/internal/logger"
+	"time"
 
-	_ "github.com/jackc/pgx/v5/stdlib"
+	_ "github.com/lib/pq"
 	"github.com/pressly/goose/v3"
 	"go.uber.org/zap"
 )
@@ -13,33 +15,38 @@ import (
 var DB *sql.DB
 var l = logger.GetLogger()
 
-func ConnectDB() (*sql.DB, error) {
+// InitDB initializes a database connection and returns a *sql.DB instance
+func InitDB(cfg *config.DBConfig) (*sql.DB, error) {
 	l.Info("Initializing database connection........")
-	//TODO: Make it env variable
-	dsn := "postgres://user:password@localhost:5432/vulnerabilities_db?sslmode=disable&search_path=public"
 
-	db, err := sql.Open("pgx", dsn)
-	if err != nil {
-		l.Error("Failed to open database connection", zap.Error(err))
-		return nil, fmt.Errorf("failed to connect to PostgreSQL: %w", err)
+	dsn := cfg.GetDSN()
+
+	var db *sql.DB
+	var err error
+
+	for i := 0; i < 10; i++ {
+		db, err = sql.Open("postgres", dsn)
+		if err != nil {
+			l.Error("Failed to open database connection", zap.Error(err))
+		} else {
+			err = db.Ping()
+			if err == nil {
+				break
+			}
+			l.Error("Database ping failed", zap.Error(err))
+		}
+		time.Sleep(2 * time.Second)
 	}
-
-	err = db.Ping()
-	if err != nil {
-		l.Error("Database ping failed", zap.Error(err))
-		return nil, fmt.Errorf("failed to ping database: %w", err)
-	}
-
 	DB = db
-	l.Info("Database connected successfully!")
+	l.Info("Database connected successfully!", zap.Any("db", DB))
 
 	// Run migrations
-	if err := RunMigrations(db); err != nil {
+	err = RunMigrations(db)
+	if err != nil {
 		l.Error("Database migration failed", zap.Error(err))
 		return nil, fmt.Errorf("failed to apply migrations: %w", err)
 	}
 
-	l.Info("Database connection established and migrations applied successfully!")
 	return db, nil
 }
 

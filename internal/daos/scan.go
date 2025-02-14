@@ -12,7 +12,6 @@ import (
 	"go.uber.org/zap"
 )
 
-
 func UpsertScan(scan models.ScanResultsDAO) error {
 	l := logger.GetLogger()
 	if storage.DB == nil {

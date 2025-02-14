@@ -1,6 +1,7 @@
 package main
 
 import (
+	"kai-sec/internal/config"
 	"kai-sec/internal/handlers"
 	"kai-sec/internal/logger"
 	"kai-sec/internal/storage"
@@ -10,21 +11,26 @@ import (
 )
 
 func main() {
+	// Load configuration
 	logger.InitLogger()
-	l := logger.Log
-	db, err := storage.ConnectDB()
+	l := logger.GetLogger()
+
+	cfg, err := config.LoadConfig()
 	if err != nil {
 		l.Fatal("Database connection failed:", zap.Error(err))
 	}
-	defer db.Close()
 
-	l.Info("Service started successfully!")
+	// Initialize database connection
+	db, err := storage.InitDB(cfg)
+	if err != nil {
+		l.Fatal("Could not connect to database: %v", zap.Error(err))
+	}
+	defer db.Close()
 
 	router := handlers.NewRouter()
 
 	// Start the server
 	//TODO make it env variable
-	port := "8080"
-	l.Info("Server running on port", zap.String("port", port))
-	http.ListenAndServe(":"+port, router)
+	l.Info("Server running on port", zap.String("port", cfg.ServerPort))
+	http.ListenAndServe(":"+cfg.ServerPort, router)
 }
