@@ -12,3 +12,4 @@ logs:
 
 psql:
 	docker exec -it postgres psql -U user -d vulnerabilities_db
+
